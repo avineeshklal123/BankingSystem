@@ -1,0 +1,52 @@
+﻿@page "/loanlist"
+@using BankingSystem.Models
+@using  BankingSystem.Services
+@inject LoanService loanService
+
+<h3>All Loans</h3>
+
+@if (loans != null && loans.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Loan Name</th>
+                <th>Amount</th>
+                <th>Interest Rate</th>
+                <th>Month Frequency</th>
+                <th>Date Added</th>
+                <th>Tax Rate</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var loan in loans)
+            {
+                <tr>
+                        <td>@loan.LoanName</td>
+                        <td>@loan.Amount</td>
+                        <td>@loan.InterestRate%</td>
+                        <td>@loan.MonthFrequency</td>
+                        <td>@loan.DateAdded</td>
+                        <td>@loan.TaxRate%</td>
+                        <td>
+                        <NavLink href="@($"loanexpand/{loan.Id}")">View Cash Flow</NavLink>
+                        </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No loans found.</p>
+}
+
+@code {
+    List<Loan> loans;
+
+    protected override async Task OnInitializedAsync()
+    {
+        loans = await loanService.GetLoans();
+    }
+}

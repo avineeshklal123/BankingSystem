@@ -1,0 +1,83 @@
+﻿@page "/alert"
+@using BankingSystem.Models
+@using BankingSystem.Services
+@inject LoanService loanService
+
+<h3>Alert! You may have upcoming loan paymets!</h3>
+
+@if (alertcashflows != null && alertcashflows.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Loan Name</th>
+                <th>Date Of Payment</th>
+                <th>Fee End Date</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var flow in alertcashflows)
+            {
+                <tr>
+                    <td>@flow.CashFlowName</td>
+                    <td>@flow.DateofPayment</td>
+                    <td>@flow.EndDate</td>
+
+
+                    @if (flow.TaxAmount != 0)
+                    {
+                        <th>Tax Amount</th>
+                        <td>@Math.Round(flow.TaxAmount , 2)</td>
+                        <th>Total Amount with Taxes</th>
+                        <td>@Math.Round(flow.Amount ,2)</td>
+                    }
+
+                    else
+                    {
+                        <th>Amount</th>
+                        <td>@Math.Round(flow.Amount ,2)</td>
+                        <th>Remaining Balance</th>
+                        <td>@Math.Round(flow.Balance)</td>
+                    }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No Immediate Loan Payments!</p>
+}
+
+@code {
+    List<Loan> loans;
+    List<CashFlow> alertcashflows;
+    public DateTime today = DateTime.Today;
+    protected override async Task OnInitializedAsync()
+    {
+        loans = await loanService.GetLoans();
+        if(loans!=null)
+        {
+            foreach (Loan loan in loans)
+            {
+                List<CashFlow> cashFlows;
+                cashFlows = await loanService.GetCashFlowsAsync(loan);
+                if (cashFlows != null)
+                {
+                    foreach (CashFlow c in cashFlows)
+                    {   if (c == null) continue;
+                        TimeSpan difference = c.StartDate - today;
+                        if (difference.Days <= 10)
+                        {
+                            alertcashflows.Add(c);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    
+}

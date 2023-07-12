@@ -1,0 +1,104 @@
+﻿@page "/addloan"
+@using System.Globalization
+@using BankingSystem.Models
+@using BankingSystem.Services
+@using Microsoft.AspNetCore.Mvc.ViewFeatures;
+@inject LoanService loanService
+
+
+<h3>Add Loan</h3>
+
+<EditForm Model="@loan" OnValidSubmit="SubmitLoan">
+    <DataAnnotationsValidator />
+
+
+    <div class="form-group">
+        <label for="loanName">Loan Name</label>
+        <InputText id="loanName" class="form-control" @bind-Value="loan.LoanName" />
+        <ValidationMessage For="@(() => loan.LoanName)" />
+    </div>
+
+    <div class="form-group">
+        <label for="amount">Amount</label>
+        <InputNumber id="amount" class="form-control" @bind-Value="loan.Amount" />
+        <ValidationMessage For="@(() => loan.Amount)" />
+    </div>
+
+    <div class="form-group">
+        <label for="interestRate">Interest Rate (%)</label>
+        <InputNumber id="interestRate" class="form-control" @bind-Value="loan.InterestRate" />
+        <ValidationMessage For="@(() => loan.InterestRate)" />
+    </div>
+
+    <div class="form-group">
+        <label>Please Select your Monthly Frequency:</label>
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" id="monthfrequency1" value="1" checked="@IsmfSelected(1)" @onchange="() => Setmf(1)">
+            <label class="form-check-label" for="interestRate1">1</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" id="monthfrequency3" value="3" checked="@IsmfSelected(3)" @onchange="() => Setmf(3)">
+            <label class="form-check-label" for="interestRate3">3</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" id="monthfrequency4" value="4" checked="@IsmfSelected(4)" @onchange="() => Setmf(4)">
+            <label class="form-check-label" for="interestRate4">4</label>
+        </div>
+
+        <div class="form-check">
+            <input class="form-check-input" type="radio" id="monthfrequency6" value="6" checked="@IsmfSelected(6)" @onchange="() => Setmf(6)">
+            <label class="form-check-label" for="interestRate6">6</label>
+        </div>
+    </div>
+
+    <div class="form-group">
+        <label for="taxLevied">TAX LEVIED:</label>
+        <InputCheckbox id="taxLevied" @bind-Value="loan.TaxLevied" />
+        @if (loan.TaxLevied)
+        {
+            <p><b><i>Applicable Tax Rate by Finance Norms is 1%</i></b></p>
+        }
+    </div>
+
+
+
+    <div class="form-group">
+        <label for="dateAdded">Date Added</label>
+        <InputDate id="dateAdded" class="form-control" @bind-Value="loan.DateAdded" />
+        <ValidationMessage For="@(() => loan.DateAdded)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add Loan</button>
+</EditForm>
+
+
+@code {
+
+    Loan loan = new Loan();
+    private bool IsmfSelected(int mf)
+    {
+        return loan.MonthFrequency == mf;
+    }
+
+    private void Setmf(int mf)
+    {
+        loan.MonthFrequency = mf;
+    }
+    async Task SubmitLoan()
+    { 
+        if (!loan.TaxLevied)
+        {
+            loan.TaxRate = 0;
+        }
+        else loan.TaxRate = 1;
+        
+        await loanService.AddLoanAsync(loan);
+        loan = new ();
+        
+    }
+
+
+}

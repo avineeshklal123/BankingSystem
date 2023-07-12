@@ -1,0 +1,66 @@
+﻿@page "/loanexpand"
+@page "/loanexpand/{loanId:int}"
+@using BankingSystem.Models
+@using BankingSystem.Services
+@inject LoanService loanService
+
+<h3>Cash Flow Details</h3>
+@if (cashFlows != null && cashFlows.Any())
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Date Of Payment</th>
+                <th>Fee Start Date</th>
+                <th>Fee End Date</th>
+                <th>Interest Days</th>
+                
+                
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var flow in cashFlows)
+            {
+                <tr>
+                    <td>@flow.DateofPayment</td>
+                    <td>@flow.DateofPayment</td>
+                    <td>@flow.EndDate</td>
+                    <td>@flow.InterestDays</td>
+                
+                
+                @if (flow.TaxAmount != 0)
+                {
+                      <th>Tax Amount</th>
+                      <td>@Math.Round(flow.TaxAmount , 2)</td>
+                      <th>Total Amount with Taxes</th>
+                      <td>@Math.Round(flow.Amount ,2)</td>
+                }
+
+                else
+                {
+                        <th>Amount</th>
+                        <td>@Math.Round(flow.Amount ,2)</td>
+                        <th>Remaining Balance</th>
+                        <td>@Math.Round(flow.Balance)</td>
+                }
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <p>No loans found.</p>
+}
+
+@code {
+    [Parameter]
+    public int loanId { get; set; }
+    List<CashFlow> cashFlows;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Loan loan = await loanService.GetLoanbyID(loanId);
+        cashFlows = await loanService.GetCashFlowsAsync(loan);
+    }
+}
